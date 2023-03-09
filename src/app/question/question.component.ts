@@ -20,6 +20,7 @@ export class QuestionComponent implements OnInit {
   getAllQuestions(){
     this.service.getQuestionJson().subscribe((result)=>{
       console.warn(result);
+      console.warn(result);
     })
   }
 
