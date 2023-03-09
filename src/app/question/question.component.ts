@@ -17,11 +17,14 @@ export class QuestionComponent implements OnInit {
   public correctAnswer:number = 0;
   public inCorrectAnswer:number = 0;
   public interval$:any;
+  public progressBar:string="0";
+  public isQuizCompleted:boolean = false;
   constructor(private service : QuestionService) { }
 
   ngOnInit(): void {
     this.name = localStorage.getItem("name")!;
     this.getAllQuestions();
+    this.startCounter();
   }
 
   getAllQuestions(){
@@ -38,25 +41,66 @@ export class QuestionComponent implements OnInit {
     this.currentQuestion++;
   }
   answer(questionNo:number,option:any){
+
+    if(questionNo === this.questionList.length){
+      this.isQuizCompleted = true;
+      this.stopCounter();
+    }
+
     if(option.correct){
       this.points+=10;
-      // this.points = this.points + 10;
       this.correctAnswer++;
-      this.currentQuestion++
-    }
-    else{
+      setTimeout(() => {
+        this.currentQuestion++
+        this.resetCounter();
+        this.getProgressPercent();   
+      }, 1000);
+
+    }else{
+      setTimeout(() => {
+        this.currentQuestion++;
+        this.inCorrectAnswer++;
+        this.resetCounter();
+        this.getProgressPercent();
+      }, 1000);
+
       this.points-= 10;
-      this.currentQuestion++;
-      this.inCorrectAnswer++;
     }
   }
+  
   startCounter(){
-    this.interval$ = interval
+    this.interval$ = interval(1000).subscribe((result)=>{
+      console.warn("value of interval",result);
+      this.counter--;
+      if(this.counter===0){
+        this.currentQuestion++;
+        this.counter=60;
+        this.points-=10;
+      }
+    });
+    setTimeout(() => {
+      this.interval$.unsubscribe();
+    }, 600000);
   }
   stopCounter(){
-    
+    this.interval$.unsubscribe();
+    this.counter=0;
   }
   resetCounter(){
-    
+    this.stopCounter();
+    this.counter = 60;
+    this.startCounter();
+  }
+  resetQuiz(){
+    this.resetCounter();
+    this.getAllQuestions();
+    this.points=0;
+    this.counter = 60;
+    this.currentQuestion = 0;
+    this.progressBar = '0';
+  }
+  getProgressPercent(){
+    this.progressBar = ((this.currentQuestion/this.questionList.length)*100).toString();
+    return this.progressBar;
   }
 }
